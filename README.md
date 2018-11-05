@@ -1,35 +1,27 @@
-# Alpha-Omok
+# AlphaGo Zero for Connect6
 
-This is a project of [Reinforcement Learning KR group](https://www.facebook.com/groups/ReinforcementLearningKR/).
+#### This repository is based on alpha-omok made by RLKorea. [Original Code for Omok version](https://github.com/reinforcement-learning-kr/alpha_omok)
 
-AlphaZero is a Reinforcement Learning algorithm which is effectively combine [MCTS(Monte-Carlo Tree Search)](https://en.wikipedia.org/wiki/Monte_Carlo_tree_search) with Actor-Critic. Alpha-Omok team wanted to apply [AlphaZero](https://deepmind.com/blog/alphago-zero-learning-scratch/) algorithm to famous board game [Omok (Gomoku)](https://en.wikipedia.org/wiki/Gomoku). Omok is a traditional game, which uses same gameboard with [Go](https://en.wikipedia.org/wiki/Go_(game)). Therefore we thought that it is proper game to apply AlphaZero algorithm.  For now, the algorithm is implemented by [Pytorch](https://pytorch.org/). [Tensorflow](https://www.tensorflow.org) version will be release soon!! 
+AlphaZero is a Reinforcement Learning algorithm which is effectively combine [MCTS(Monte-Carlo Tree Search)](https://en.wikipedia.org/wiki/Monte_Carlo_tree_search) with Actor-Critic. The RL model is implemented by [Pytorch](https://pytorch.org/).
 
-**All the environments are implemented by [pygame](https://www.pygame.org/news), so you should install pygame to run the codes in this repository!!**
+**Usage**
+- Go [Pytorch](https://pytorch.org/) and install it.
+- pip install pygame
+- python main.py (for training, default: 9x9 board)
+- python eval_main.py (you can play the game with alpha)
 
-<br>
-
-## Training Result     
-
-<div align="center">
-    <div class="row">  
-        <img src="./image/AgentWin1_speed.gif" width="35%" alt="Play Demo (Agent win)"/>
-        <img src="./image/Draw_Speed.gif" width="35%" alt="Play Demo (Agent win)"/>
-    </div>
-</div>
 
 <br>
 
 ## Project objective
 
-There are 4 objectives to achieve in this project  
-1. MCTS on Tic-Tac-Toe
-2. MCTS on Omok
-3. AlphaZero on Omok
-4. Upload AlphaZero on web
+There are 2 objectives to achieve in this project  
+1. Implement AlphaZero on Connect6
+2. Optimize the code
 
 <br>
 
-## Documents
+## Documents (Original version, will be modified soon.)
 
 - [ID-based implementation](https://github.com/reinforcement-learning-kr/alpha_omok/blob/developer/docs/1_ID_based.md)
 - [Description of the parameters](https://github.com/reinforcement-learning-kr/alpha_omok/blob/developer/docs/2_Parameters.md)
@@ -78,25 +70,6 @@ The description of the files in the folder is as follows. (files with **bold tex
 - utils: functions for implementing algorithm 
 - WebAPI: Implementation of web API
 
-
-
-#### Sample Image of Web Demo
-
- <p align= "center">
-  <img src="./image/web_demo.png" width="800" alt="simple board example" />
-</p>
-
-<br>
-
-
-## Future Work
-
-- Apply parallel computation to improve computation speed
-- Make [Tensorflow](https://www.tensorflow.org) version of the code
-- Train the agent to solve 15x15 size Omok game
-- Apply [Renju Rule](https://en.wikipedia.org/wiki/Renju)
-
-
 <br>
 
 
@@ -104,32 +77,4 @@ The description of the files in the folder is as follows. (files with **bold tex
 
 1. [Mastering the Game of Go with Deep Neural Networks and Tree Search](https://storage.googleapis.com/deepmind-media/alphago/AlphaGoNaturePaper.pdf)
 2. [Mastering the Game of Go without Human Knowledge](https://www.nature.com/articles/nature24270)
-
-
-<br>
-
-
-## AlphaOmok Team
-
-<p align= "center">
-  <img src="./image/alphaomok_team.png" width="700" alt="mini omok team" />
-</p>
-
-
-
-#### Kyushik Min
-
-- [Github](https://github.com/Kyushik) , [Facebook](https://www.facebook.com/kyushik.min)
-
-#### Jungdae Kim
-
-- [Github](https://github.com/kekmodel), [Facebook](https://www.facebook.com/kekmodel)
-
-#### Taeyoung Kim
-
-- [Github](https://github.com/tykimos), [Facebook](https://www.facebook.com/tykimo?fb_dtsg_ag=Ady1EHqKnlcLT-zAFbaUyDBb3rkcn83lfcN0FlNww_4yow%3AAdyPwQKxu7-xgSCkXX8Ui4lfc_2Cj1qYPXKS3-S1TtbIHQ)
-
-#### Woongwon Lee
-
-- [Github](https://github.com/dnddnjs), [Facebook](https://www.facebook.com/dnddnjs?fb_dtsg_ag=Ady1EHqKnlcLT-zAFbaUyDBb3rkcn83lfcN0FlNww_4yow%3AAdyPwQKxu7-xgSCkXX8Ui4lfc_2Cj1qYPXKS3-S1TtbIHQ)
 
