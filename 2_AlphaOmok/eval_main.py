@@ -6,7 +6,7 @@ import model
 import utils
 
 # env_small: 9x9, env_regular: 15x15
-from env import env_small as game
+from env import env_connect6_small as game
 
 # Web API
 import logging
@@ -72,10 +72,10 @@ class Evaluator(object):
             self.player = agents.RandomAgent(BOARD_SIZE)
         elif model_path_a == 'puct':
             print('load player model:', model_path_a)
-            self.player = agents.PUCTAgent(BOARD_SIZE, N_MCTS_PLAYER)
+            self.player = agents.PUCTAgent(BOARD_SIZE, game.WIN_STONES, N_MCTS_PLAYER)
         elif model_path_a == 'uct':
             print('load player model:', model_path_a)
-            self.player = agents.UCTAgent(BOARD_SIZE, N_MCTS_PLAYER)
+            self.player = agents.UCTAgent(BOARD_SIZE, game.WIN_STONES, N_MCTS_PLAYER)
         elif model_path_a == 'human':
             print('load player model:', model_path_a)
             self.player = agents.HumanAgent(BOARD_SIZE, self.env)
@@ -85,6 +85,7 @@ class Evaluator(object):
         else:
             print('load player model:', model_path_a)
             self.player = agents.ZeroAgent(BOARD_SIZE,
+                                           game.WIN_STONES,
                                            N_MCTS_PLAYER,
                                            IN_PLANES_PLAYER,
                                            noise=False)
@@ -105,10 +106,10 @@ class Evaluator(object):
             self.enemy = agents.RandomAgent(BOARD_SIZE)
         elif model_path_b == 'puct':
             print('load enemy model:', model_path_b)
-            self.enemy = agents.PUCTAgent(BOARD_SIZE, N_MCTS_ENEMY)
+            self.enemy = agents.PUCTAgent(BOARD_SIZE, game.WIN_STONES, N_MCTS_ENEMY)
         elif model_path_b == 'uct':
             print('load enemy model:', model_path_b)
-            self.enemy = agents.UCTAgent(BOARD_SIZE, N_MCTS_ENEMY)
+            self.enemy = agents.UCTAgent(BOARD_SIZE, game.WIN_STONES, N_MCTS_ENEMY)
         elif model_path_b == 'human':
             print('load enemy model:', model_path_b)
             self.enemy = agents.HumanAgent(BOARD_SIZE, self.env)
@@ -118,8 +119,9 @@ class Evaluator(object):
         else:
             print('load enemy model:', model_path_b)
             self.enemy = agents.ZeroAgent(BOARD_SIZE,
-                                          N_MCTS_ENEMY,
-                                          IN_PLANES_ENEMY,
+                                          game.WIN_STONES,
+                                          N_MCTS_PLAYER,
+                                          IN_PLANES_PLAYER,
                                           noise=False)
             self.enemy.model = model.PVNet(N_BLOCKS_ENEMY,
                                            IN_PLANES_ENEMY,
@@ -135,8 +137,9 @@ class Evaluator(object):
 
         # monitor agent
         self.monitor = agents.ZeroAgent(BOARD_SIZE,
-                                        N_MCTS_MONITOR,
-                                        IN_PLANES_ENEMY,
+                                        game.WIN_STONES,
+                                        N_MCTS_PLAYER,
+                                        IN_PLANES_PLAYER,
                                         noise=False)
         self.monitor.model = model.PVNet(N_BLOCKS_ENEMY,
                                          IN_PLANES_ENEMY,

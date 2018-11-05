@@ -5,7 +5,7 @@ from info.game_info import GameInfo
 import utils
 
 # env_small: 9x9, env_regular: 15x15
-from env import env_small as game
+from env import env_connect6_small as game
 BOARD_SIZE = game.Return_BoardParams()[0]
 
 web_api = Blueprint('web_api', __name__)

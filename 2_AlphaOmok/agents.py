@@ -37,15 +37,15 @@ class Agent(object):
 
 
 class ZeroAgent(Agent):
-    def __init__(self, board_size, num_mcts, inplanes, noise=True):
+    def __init__(self, board_size, win_mark, num_mcts, inplanes, noise=True):
         super(ZeroAgent, self).__init__(board_size)
         self.board_size = board_size
         self.num_mcts = num_mcts
         self.inplanes = inplanes
         # tictactoe and omok
-        self.win_mark = 3 if board_size == 3 else 5
+        self.win_mark = win_mark
         self.alpha = 10 / self.board_size**2
-        self.c_puct = 5
+        self.c_puct = 5 # for PUCT
         self.noise = noise
         self.root_id = None
         self.model = None
@@ -72,7 +72,7 @@ class ZeroAgent(Agent):
         self.visit = visit
         self.policy = policy
 
-        pi = visit / visit.sum()
+        pi = visit / (visit.sum() + 1e-8) # normally visit.sum() is not zero because of expansion
 
         if tau == 0:
             pi, _ = utils.argmax_onehot(pi)
@@ -85,9 +85,9 @@ class ZeroAgent(Agent):
             self.is_real_root = True
             # init root node
             self.tree[self.root_id] = {'child': [],
-                                       'n': 0.,
-                                       'w': 0.,
-                                       'q': 0.,
+                                       'n': 0., # the number of visit
+                                       'w': 0., # reward or value
+                                       'q': 0., # (w, n)
                                        'p': 0.}
         # add noise
         else:
@@ -119,7 +119,7 @@ class ZeroAgent(Agent):
             self.message = 'simulation: {}\r'.format(i + 1)
 
             # selection
-            leaf_id, win_index = self._selection(root_id)
+            leaf_id, win_index = self._selection(root_id) # win_index: 1(Black), 2(White), 3(Draw)
 
             # expansion and evaluation
             value, reward = self._expansion_evaluation(leaf_id, win_index)
@@ -134,11 +134,11 @@ class ZeroAgent(Agent):
     def _selection(self, root_id):
         node_id = root_id
 
-        while self.tree[node_id]['n'] > 0:
-            board = utils.get_board(node_id, self.board_size)
+        while self.tree[node_id]['n'] > 0: # if it is leaf node
+            board = utils.get_board(node_id, self.board_size, self.win_mark)
             win_index = utils.check_win(board, self.win_mark)
 
-            if win_index != 0:
+            if win_index != 0: # if the game is over and the current node is not leaf
                 return node_id, win_index
 
             qu = {}
@@ -148,28 +148,29 @@ class ZeroAgent(Agent):
             for action_idx in self.tree[node_id]['child']:
                 edge_id = node_id + (action_idx,)
                 n = self.tree[edge_id]['n']
-                total_n += n
+                total_n += n # the total number of visit of child nodes
 
+            # PUCT calculation
             for i, action_index in enumerate(self.tree[node_id]['child']):
-                child_id = node_id + (action_index,)
+                child_id = node_id + (action_index,) # history + action visited previously
                 n = self.tree[child_id]['n']
                 q = self.tree[child_id]['q']
                 p = self.tree[child_id]['p']
-                u = self.c_puct * p * np.sqrt(total_n) / (n + 1)
+                u = self.c_puct * p * np.sqrt(total_n) / (n + 1) # 2nd term of PUCT
                 qu[child_id] = q + u
 
             max_value = max(qu.values())
-            ids = [key for key, value in qu.items() if value == max_value]
-            node_id = ids[np.random.choice(len(ids))]
+            ids = [key for key, value in qu.items() if value == max_value] # argmax indices
+            node_id = ids[np.random.choice(len(ids))] # key & value of seleted index among argmax indices
 
-        board = utils.get_board(node_id, self.board_size)
+        board = utils.get_board(node_id, self.board_size, self.win_mark)
         win_index = utils.check_win(board, self.win_mark)
 
         return node_id, win_index
 
     def _expansion_evaluation(self, leaf_id, win_index):
         leaf_state = utils.get_state_pt(
-            leaf_id, self.board_size, self.inplanes)
+            leaf_id, self.board_size, self.inplanes, self.win_mark)
         self.model.eval()
         with torch.no_grad():
             state_input = torch.tensor([leaf_state]).to(device).float()
@@ -177,7 +178,7 @@ class ZeroAgent(Agent):
             policy = policy.cpu().numpy()[0]
             value = value.cpu().numpy()[0]
 
-        if win_index == 0:
+        if win_index == 0: # the game is not over
             # expansion
             actions = utils.legal_actions(leaf_id, self.board_size)
             prior_prob = np.zeros(self.board_size**2)
@@ -250,7 +251,7 @@ class ZeroAgent(Agent):
         print('tree depth:', 0 if max_len <= 0 else max_len - 1)
 
     def get_pv(self, root_id):
-        state = utils.get_state_pt(root_id, self.board_size, self.inplanes)
+        state = utils.get_state_pt(root_id, self.board_size, self.inplanes, self.win_mark)
         self.model.eval()
         with torch.no_grad():
             state_input = torch.tensor([state]).to(device).float()
@@ -261,12 +262,12 @@ class ZeroAgent(Agent):
 
 
 class PUCTAgent(Agent):
-    def __init__(self, board_size, num_mcts):
+    def __init__(self, board_size, win_mark, num_mcts):
         super(PUCTAgent, self).__init__(board_size)
         self.board_size = board_size
         self.num_mcts = num_mcts
         # tictactoe and omok
-        self.win_mark = 3 if board_size == 3 else 5
+        self.win_mark = win_mark
         self.c_puct = 5
         self.root_id = None
         self.board = None
@@ -441,12 +442,12 @@ class PUCTAgent(Agent):
 
 
 class UCTAgent(Agent):
-    def __init__(self, board_size, num_mcts):
+    def __init__(self, board_size, win_mark, num_mcts):
         super(UCTAgent, self).__init__(board_size)
         self.board_size = board_size
         self.num_mcts = num_mcts
         # tictactoe and omok
-        self.win_mark = 3 if board_size == 3 else 5
+        self.win_mark = win_mark
         self.root_id = None
         self.board = None
         self.turn = None

@@ -6,6 +6,10 @@ ALPHABET = ' A B C D E F G H I J K L M N O P Q R S'
 
 
 def valid_actions(board):
+    '''
+    Validate the actios be zero.
+    Used for PUCTAgent, UCTAgent, and RandomAgent, not ZeroAgent.
+    '''
     actions = []
     count = 0
     board_size = len(board)
@@ -20,6 +24,11 @@ def valid_actions(board):
 
 
 def legal_actions(node_id, board_size):
+    '''
+    Get the legal actions.
+    Used for ZeroAgent.
+    Return avaliable action list.
+    '''
     all_action = {a for a in range(board_size**2)}
     action = set(node_id[1:])
     actions = all_action - action
@@ -136,7 +145,10 @@ def get_state_tf(id, turn, board_size, channel_size):
     return state
 
 
-def get_state_pt(node_id, board_size, channel_size):
+def get_state_pt(node_id, board_size, channel_size, win_mark=5):
+    '''
+    state for evaluating
+    '''
     state_b = np.zeros((board_size, board_size))
     state_w = np.zeros((board_size, board_size))
     color = np.ones((board_size, board_size))
@@ -145,15 +157,21 @@ def get_state_pt(node_id, board_size, channel_size):
         [np.zeros((board_size, board_size)) for _ in range(channel_size)],
         maxlen=channel_size)
 
+    turn = 0
     for i, action_idx in enumerate(node_id):
-        if i == 0:
+        if win_mark == 6:
+            turn = (turn + (i % 2)) % 2
+        else:
+            turn = i
+
+        if turn == 0:
             history.append(state_b.copy())
             history.append(state_w.copy())
         else:
             row = action_idx // board_size
             col = action_idx % board_size
 
-            if i % 2 == 1:
+            if turn % 2 == 1:
                 state_b[row, col] = 1
                 history.append(state_b.copy())
                 color_idx = 0
@@ -168,10 +186,25 @@ def get_state_pt(node_id, board_size, channel_size):
     return state
 
 
-def get_board(node_id, board_size):
+def get_board(node_id, board_size, win_mark=5):
+    '''
+    used in selection for ZeroAgent
+    used in expansion for PUCT
+    cleanup board for reward    
+
+    node_id: history of game. (0, a_1, ..., a_N)
+    board_size: 3 or 9 or 15
+    '''
     board = np.zeros(board_size**2)
-    for i, action_index in enumerate(node_id[1:]):
-        if i % 2 == 0:
+    turn = 0
+    for i, action_index in enumerate(node_id[1:]): # it is available from 1, initial root_id: (0,)
+        # (i+1) means the number of stones
+        if win_mark == 6:
+            turn = (turn + (i % 2)) % 2
+        else:
+            turn = i
+            
+        if turn % 2 == 0:
             board[action_index] = 1
         else:
             board[action_index] = -1
@@ -180,6 +213,9 @@ def get_board(node_id, board_size):
 
 
 def get_turn(node_id):
+    '''
+    d
+    '''
     if len(node_id) % 2 == 1:
         return 0
     else:
@@ -206,6 +242,9 @@ def argmax_onehot(pi):
 
 
 def get_reward(win_index, leaf_id):
+    '''
+    not used for ZeroAgent
+    '''
     turn = get_turn(leaf_id)
     if win_index == 1:
         if turn == 1:

@@ -10,12 +10,12 @@ import torch.optim as optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
-import agents.local as agents
+import agents
 import model
 import utils
 
 # env_small: 9x9, env_regular: 15x15
-from env import env_small as game
+from env import env_connect6_small as game
 
 
 logging.basicConfig(
@@ -35,7 +35,7 @@ IN_PLANES = 5  # history * 2 + 1
 OUT_PLANES = 128
 
 # Training
-USE_TENSORBOARD = False
+USE_TENSORBOARD = True
 N_SELFPLAY = 100
 TOTAL_ITER = 10000000
 MEMORY_SIZE = 30000
@@ -75,6 +75,7 @@ if USE_TENSORBOARD:
 
 # Initialize agent & model
 Agent = agents.ZeroAgent(BOARD_SIZE,
+                         game.WIN_STONES,
                          N_MCTS,
                          IN_PLANES,
                          noise=True)
@@ -155,7 +156,7 @@ def self_play(n_selfplay):
 
             # ===================== collect samples ======================== #
 
-            state = utils.get_state_pt(root_id, BOARD_SIZE, IN_PLANES)
+            state = utils.get_state_pt(root_id, BOARD_SIZE, IN_PLANES, game.WIN_STONES)
 
             if turn == 0:
                 state_black.appendleft(state)
